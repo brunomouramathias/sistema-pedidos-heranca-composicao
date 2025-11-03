@@ -1,0 +1,24 @@
+## Ignore arquivos de build e pastas temporárias
+
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+## Arquivos do NuGet
+packages/
+*.nupkg
+*.snupkg
+
+## Resultados de testes
+TestResults/
+*.trx
+
+## Arquivos do Visual Studio Code
+.vscode/
+
+## Arquivos temporários do Windows
+Thumbs.db
+Desktop.ini
+
