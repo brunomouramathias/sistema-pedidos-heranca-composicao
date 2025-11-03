@@ -165,6 +165,28 @@ Não existe solução única. Usar a técnica certa para cada problema deixa o c
 
 ---
 
+## 🎨 Instruções de Design para a IA de Slides
+
+**TEMA:** 
+- **Usar tema ESCURO obrigatoriamente**
+- Fundo escuro com texto claro
+- Cores de destaque: azul, verde, laranja em tons vibrantes
+
+**IMAGENS:**
+- **EVITAR imagens de pessoas**
+- **EVITAR imagens genéricas de estoque**
+- Preferir: diagramas, ícones, ilustrações técnicas simples
+- Se usar imagens: apenas ícones de código, setas, boxes, fluxogramas
+- Foco no CONTEÚDO, não em decoração
+
+**ESTILO:**
+- Minimalista e profissional
+- Fonte clara e legível
+- Espaçamento adequado
+- Diagramas simples de classes (se necessário)
+
+---
+
 ## 💡 Dicas para Apresentar (para você lembrar)
 
 **Slide 1:** "Eu fiz um sistema que processa pedidos usando duas técnicas: herança para tipos e composição para políticas"
