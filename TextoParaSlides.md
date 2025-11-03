@@ -1,351 +1,187 @@
-# Texto Completo para Geração de Slides - Sistema de Pedidos (Nacional vs Internacional)
+# Texto para Geração de Slides - Sistema de Pedidos (9 Slides)
 
-Este documento contém todo o conteúdo necessário para criar uma apresentação sobre o projeto de Sistema de Pedidos utilizando Herança, Composição, Interfaces e LSP em C#.
+**Versão Simplificada para Apresentação**
 
 ---
 
-## Slide 1: Título e Contexto
+## Slide 1: Apresentação
 
-**Título:** Sistema de Pedidos - Herança, Composição e LSP em C#
-
-**Subtítulo:** Implementação de Pedidos Nacionais e Internacionais
+**Título:** Sistema de Pedidos - Nacional vs Internacional
 
 **Autor:** Bruno Moura Mathias Fernades Simão
 
-**Contexto:** Este projeto demonstra a aplicação prática de conceitos fundamentais de Programação Orientada a Objetos para criar um sistema de processamento de pedidos de venda que diferencia pedidos nacionais e internacionais.
+**O que é:** Um sistema que processa pedidos de venda usando duas técnicas importantes:
+- **Herança** para diferenciar pedidos nacionais e internacionais
+- **Composição** para adicionar frete e promoções de forma flexível
+
+**Resultado:** Código organizado, sem repetição e fácil de expandir
 
 ---
 
-## Slide 2: O Problema
+## Slide 2: O Problema que Resolvi
 
-**Cenário Real:** Uma loja processa pedidos de venda nacionais e internacionais
+**Cenário:**
+Uma loja vende produtos no Brasil e no exterior. Os dois tipos de pedido:
 
-**Desafios Identificados:**
-- Ambos os tipos de pedido seguem o mesmo ritual: Validar → Calcular Total → Emitir Recibo
-- Mas existem diferenças cruciais nas regras de impostos, taxas e formato do recibo
-- Pedidos nacionais emitem NF-e, enquanto internacionais emitem Commercial Invoice
-- Pedidos internacionais têm taxas de importação, custos aduaneiros e câmbio
-- Políticas extras como frete e promoção variam independentemente do tipo de pedido
+✅ **Fazem a mesma coisa:**
+- Validar pedido → Calcular total → Emitir recibo
 
-**Questão Central:** Como modelar isso sem duplicar código e mantendo flexibilidade?
+❌ **Mas são diferentes em:**
+- Nacional emite NF-e / Internacional emite Commercial Invoice
+- Internacional tem taxa de importação, custos extras e câmbio
+- Frete e promoção variam independente do tipo
 
----
-
-## Slide 3: Ritual Comum de Processamento
-
-**Fluxo Fixo de Processamento:**
-
-1. **Validar o Pedido**
-   - Verificar se há itens válidos
-   - Garantir dados mínimos necessários
-
-2. **Calcular Total**
-   - Processar subtotal base
-   - Aplicar regras específicas (taxas, impostos, frete, promoções)
-
-3. **Emitir Recibo**
-   - Gerar documento fiscal apropriado
-   - Formato varia conforme tipo (NF-e ou Commercial Invoice)
-
-**Princípio:** O ritual é o mesmo, mas os detalhes de cada etapa podem variar
+**Desafio:** Como fazer sem repetir código e permitir combinações flexíveis?
 
 ---
 
-## Slide 4: Diferenças entre Nacional e Internacional
+## Slide 3: Solução Parte 1 - Herança (para o TIPO do pedido)
 
-**Pedido Nacional:**
-- Recibo: NF-e (Nota Fiscal eletrônica)
-- Formato fiscal brasileiro
-- Impostos nacionais já embutidos
-- Moeda: Real (R$)
+**Por que Herança?**
+Um pedido nacional SEMPRE será nacional. Um internacional SEMPRE será internacional.
+Isso é a "essência" do pedido.
 
-**Pedido Internacional:**
-- Recibo: Commercial Invoice
-- Documento de exportação/importação
-- Taxa de importação adicional
-- Custos aduaneiros
-- Aplicação de câmbio
-- Moeda: Dólar ($)
+**Como funciona:**
+- **Classe base `Pedido`** = define o ritual fixo (Validar → Calcular → Emitir)
+- **`PedidoNacional`** = personaliza para Brasil (emite NF-e)
+- **`PedidoInternacional`** = personaliza para exterior (emite Invoice, adiciona taxas)
 
-**Observação:** Essas diferenças definem "o que é" cada tipo de pedido
+**Vantagem:** O código sempre segue a mesma ordem, mas cada tipo faz do seu jeito.
 
 ---
 
-## Slide 5: Herança por Especialização
-
-**Por que usar Herança?**
-
-A herança é apropriada quando a variação está na essência do objeto. Um pedido nacional sempre será nacional, e um internacional sempre será internacional durante todo seu ciclo de vida.
-
-**Vantagens da Abordagem:**
-- Ritual fixo garantido pela classe base através do método `Processar()`
-- Especialização segura através de ganchos virtuais protegidos
-- Polimorfismo permite tratar ambos os tipos uniformemente
-- LSP (Liskov Substitution Principle) garante substituibilidade
-
-**Classes Sealed:** PedidoNacional e PedidoInternacional são marcadas como `sealed` para evitar herança indevida e manter controle da hierarquia
-
----
-
-## Slide 6: Ganchos Virtuais (Template Method)
-
-**Classe Base Pedido:**
-
-O método público `Processar()` orquestra o ritual fixo, mas chama ganchos virtuais protegidos que permitem especialização:
-
-**Ganchos Disponíveis:**
-- `CalcularSubtotal()`: retorna o subtotal após aplicar regras específicas
-- `EmitirRecibo(decimal total)`: retorna o recibo no formato apropriado
-- `Validar()`: opcional, permite validações customizadas
-
-**Benefício:** O cliente usa apenas `Processar()`, sem precisar conhecer os detalhes internos ou tipo específico do pedido
-
----
-
-## Slide 7: Princípio da Substituição de Liskov (LSP)
-
-**O que é LSP?**
-
-Se uma classe base pode ser substituída por uma classe derivada em qualquer parte do código sem alterar o comportamento esperado, então o LSP está sendo respeitado.
-
-**Como garantimos LSP:**
-
-1. **Sem Downcast:** O cliente nunca precisa usar `is` ou casting para determinar o tipo específico
-2. **Contrato Mantido:** Processar() sempre funciona e retorna um recibo válido
-3. **Invariantes Preservadas:** Validações mínimas são respeitadas por todas as subclasses
-
-**Teste Prático:** Uma função que aceita `Pedido` funciona perfeitamente com `PedidoNacional` ou `PedidoInternacional` sem saber qual tipo recebeu
-
----
-
-## Slide 8: O Problema das Políticas Variáveis
-
-**Políticas Independentes:**
-
-Frete e promoção são características que variam independentemente do tipo de pedido:
-
-**Frete:**
-- Fixo (valor constante)
-- Percentual (% sobre o total)
-
-**Promoção:**
-- Nenhuma
-- Cupom de desconto
-
-**Explosão Combinatória:** Se usássemos herança para cada combinação, teríamos:
-- PedidoNacionalFreteFixoPromocaoCupom
-- PedidoNacionalFretePercentualSemPromocao
-- PedidoInternacionalFreteFixoPromocaoCupom
-- E muitas outras...
-
-**Isso é insustentável!**
-
----
-
-## Slide 9: Composição como Solução
+## Slide 4: Solução Parte 2 - Composição (para POLÍTICAS flexíveis)
 
 **Por que Composição?**
+Frete e promoção NÃO definem o tipo do pedido. São "extras" que combinam livremente.
 
-Frete e promoção não definem "o que é" o pedido, mas sim "como ele se comporta". Essas são características plugáveis.
+**Problema se usasse herança:**
+- PedidoNacionalComFreteFixoECupom
+- PedidoNacionalComFretePercentualSemPromocao
+- E mais 20 classes diferentes... 😱
 
-**Abordagem com Delegates:**
+**Solução:**
+Uso "peças encaixáveis" (delegates) que podem ser combinadas:
+- **Frete:** Fixo ou Percentual
+- **Promoção:** Nenhuma ou Cupom
 
-Usamos `Func<decimal, decimal>` como estratégias injetadas no construtor:
-
-**FreteStrategies:**
-- `Fixo(decimal valor)`: retorna delegate que adiciona valor fixo
-- `Percentual(decimal percentual)`: retorna delegate que calcula percentual
-
-**PromocaoStrategies:**
-- `Nenhuma()`: retorna delegate que não aplica desconto
-- `Cupom(decimal valor)`: retorna delegate que subtrai valor fixo
-
-**Vantagem:** Qualquer combinação possível sem criar novas subclasses
+**Resultado:** Qualquer combinação possível sem criar classes novas!
 
 ---
 
-## Slide 10: Flexibilidade sem Interfaces
+## Slide 5: Como Funciona na Prática
 
-**Composição Sem Interfaces:**
-
-O exercício pede composição sem criar interfaces formais. A solução usa delegates como peças plugáveis.
-
-**Exemplo de Uso:**
+**Exemplo Real de Uso:**
 
 ```csharp
 var pedido = new PedidoNacional(
     frete: FreteStrategies.Fixo(10m),
     promocao: PromocaoStrategies.Cupom(20m)
 );
+pedido.Processar();
 ```
 
-**Benefícios:**
-- Combinações livres (frete fixo + cupom, frete percentual + nenhuma promoção, etc.)
-- Sem criar hierarquia de classes para cada política
-- Fácil adicionar novas estratégias sem modificar classes existentes
-- Testável: cada delegate pode ser testado isoladamente
+**O que acontece:**
+1. Validar → verifica se tem itens
+2. Calcular → subtotal R$100 + frete R$10 - cupom R$20 = R$90
+3. Emitir → gera NF-e com total R$90
+
+**Facilidade:** Posso trocar `Fixo` por `Percentual` sem mudar nada no código principal!
 
 ---
 
-## Slide 11: Arquitetura do Sistema
+## Slide 6: Por que Isso é Bom?
 
-**Estrutura de Classes:**
+**3 Benefícios Principais:**
 
-**Classe Base:**
-- `Pedido`: define o contrato e ritual fixo com `Processar()`
+**1. Não repete código**
+- O ritual de processar está em um lugar só
+- Cada tipo só modifica o que é diferente
 
-**Classes Sealed (Herança):**
-- `PedidoNacional`: especializa cálculo e emite NF-e
-- `PedidoInternacional`: adiciona taxas/câmbio e emite Commercial Invoice
+**2. Fácil de expandir**
+- Quer adicionar frete expresso? Basta criar `FreteStrategies.Expresso()`
+- Não precisa mexer nas classes existentes
 
-**Delegates (Composição):**
-- `FreteStrategies`: estratégias de cálculo de frete
-- `PromocaoStrategies`: estratégias de aplicação de promoções
-
-**Organização:** As estratégias ficam separadas em namespace próprio (SistemaPedidos.Delegates)
+**3. Seguro de usar**
+- O código sempre funciona da mesma forma
+- Não preciso verificar se é nacional ou internacional
 
 ---
 
-## Slide 12: Testes e Validação
+## Slide 7: Comprovação - Testes
 
-**Testes de LSP:**
+**11 Testes Automatizados (todos passaram ✓)**
 
-Demonstram que `PedidoNacional` e `PedidoInternacional` podem substituir `Pedido` sem problemas:
-- Cliente usa tipo base genérico
-- Chamada a `Processar()` funciona sem downcast
-- Recibo é gerado corretamente independente do tipo concreto
+**Testes de Herança (LSP):**
+- Função genérica aceita qualquer tipo de pedido
+- Funciona igual para Nacional e Internacional
+- Não preciso fazer verificações manuais de tipo
 
 **Testes de Composição:**
-
-Validam a troca de peças (delegates) sem criar novas subclasses:
-- Frete fixo vs percentual
-- Promoção com cupom vs sem promoção
-- Combinações múltiplas (frete + promoção)
-
-**Resultado:** Todos os 11 testes passaram com sucesso
+- Frete fixo: R$100 + R$10 = R$110 ✓
+- Frete percentual 10%: R$100 + R$10 = R$110 ✓
+- Cupom desconto: R$100 - R$20 = R$80 ✓
+- Combinações múltiplas funcionam ✓
 
 ---
 
-## Slide 13: Decisões de Design
+## Slide 8: Resultados do Projeto
 
-**Quando usar Herança:**
-- Variação está na essência/identidade do objeto
-- Comportamento fixo com especialização de ritual
-- Relação "é-um" verdadeira (Carro é um Veículo)
+**O que entreguei:**
 
-**Quando usar Composição:**
-- Variação está em características independentes
-- Combinações flexíveis de comportamentos
-- Relação "tem-um" ou "usa-um"
+✅ **Código funcional em C#**
+- Classe base Pedido
+- PedidoNacional e PedidoInternacional
+- Estratégias de Frete e Promoção
 
-**No Projeto:**
-- Herança para tipo de pedido (essência)
-- Composição para políticas (comportamento plugável)
+✅ **Testes validando tudo (11/11 passando)**
 
-**Resultado:** Código flexível, robusto e fácil de manter
+✅ **Documentação completa**
+- Como funciona (design)
+- Por que fiz assim (justificativa)
 
----
-
-## Slide 14: Vantagens da Solução
-
-**Manutenibilidade:**
-- Código organizado e com responsabilidades claras
-- Fácil adicionar novos tipos de pedido (basta estender Pedido)
-- Fácil adicionar novas políticas (basta criar novo delegate)
-
-**Extensibilidade:**
-- Novas estratégias de frete/promoção sem modificar classes existentes
-- Sem explosão de subclasses
-
-**Testabilidade:**
-- LSP garante que testes com tipo base funcionam para derivadas
-- Delegates testáveis isoladamente
-- Testes de composição validam combinações
-
-**Princípios SOLID:**
-- Single Responsibility: cada classe tem uma responsabilidade
-- Open/Closed: aberto para extensão, fechado para modificação
-- Liskov Substitution: subclasses substituem base sem quebras
+✅ **Publicado no GitHub**
+- Código organizado
+- Pronto para usar e expandir
 
 ---
 
-## Slide 15: Implementação em C#
+## Slide 9: Conclusão - O que Aprendi
 
-**Tecnologias Utilizadas:**
-- .NET 8.0
-- xUnit para testes unitários
-- Delegates para composição
-- Sealed classes para controle de hierarquia
+**Duas Técnicas, Dois Usos:**
 
-**Estrutura do Repositório:**
-- SistemaPedidos (projeto principal)
-- SistemaPedidos.Tests (testes unitários)
-- README conciso
-- Documento de design (Fases 1 e 2)
+**Herança = para ESSÊNCIA**
+- Quando algo "é" de um tipo
+- Exemplo: um pedido nacional É nacional (não muda)
 
-**Qualidade:**
-- Projeto compila sem erros
-- Todos os testes passam (11/11)
-- Código organizado e limpo
+**Composição = para COMPORTAMENTO**
+- Quando algo "tem" ou "usa" características
+- Exemplo: um pedido TEM frete (que pode mudar)
+
+**Lição Principal:**
+Não existe solução única. Usar a técnica certa para cada problema deixa o código mais limpo e fácil de manter.
+
+**Repositório GitHub:** https://github.com/brunomouramathias/sistema-pedidos-heranca-composicao
 
 ---
 
-## Slide 16: Lições Aprendidas
+## 💡 Dicas para Apresentar (para você lembrar)
 
-**Herança não é sempre a solução:**
-Usar herança para tudo leva a hierarquias complexas e inflexíveis. Composição oferece alternativa poderosa.
+**Slide 1:** "Eu fiz um sistema que processa pedidos usando duas técnicas: herança para tipos e composição para políticas"
 
-**LSP é fundamental:**
-Respeitar o princípio de substituição garante polimorfismo verdadeiro e código mais robusto.
+**Slide 2:** "O problema é que pedidos nacionais e internacionais fazem a mesma coisa mas de forma diferente"
 
-**Delegates são poderosos:**
-Em C#, delegates permitem composição elegante sem necessidade de interfaces formais para casos simples.
+**Slide 3:** "Usei herança porque o tipo do pedido nunca muda - nacional sempre é nacional"
 
-**Template Method funciona:**
-Definir ritual fixo na base com ganchos virtuais é padrão eficaz para especialização controlada.
+**Slide 4:** "Usei composição para frete e promoção porque eles combinam de várias formas - seria impossível criar uma classe pra cada combinação"
 
-**Testes validam design:**
-Testes de LSP e composição comprovam que as decisões de arquitetura estão corretas.
+**Slide 5:** "Veja como é simples usar: você monta o pedido escolhendo as peças que quer"
 
----
+**Slide 6:** "Os benefícios são: não repete código, fácil expandir, seguro usar"
 
-## Slide 17: Conclusão
+**Slide 7:** "Fiz 11 testes automatizados que provam que tudo funciona"
 
-**Objetivo Alcançado:**
+**Slide 8:** "No final entreguei código funcional, testes passando, documentação e publiquei no GitHub"
 
-Implementamos um sistema de pedidos que:
-- Diferencia pedidos nacionais e internacionais através de herança controlada
-- Permite políticas flexíveis de frete e promoção através de composição
-- Respeita o Princípio da Substituição de Liskov
-- Evita explosão de subclasses
-- É testável e extensível
-
-**Conceitos Aplicados:**
-- Herança por especialização de ritual
-- Composição com delegates
-- Template Method Pattern
-- LSP (Liskov Substitution Principle)
-- SOLID principles
-
-**Resultado:** Código limpo, robusto e fácil de manter, demonstrando boas práticas de orientação a objetos.
-
----
-
-## Informações Adicionais para IA de Slides
-
-**Tom da Apresentação:** Técnico mas acessível, com foco em decisões de design e justificativas
-
-**Elementos Visuais Sugeridos:**
-- Diagramas de classe mostrando Pedido → PedidoNacional/PedidoInternacional
-- Ilustrações do fluxo Validar → Calcular → Emitir
-- Comparação visual entre hierarquia de herança vs composição
-- Exemplos de código curtos e objetivos
-- Ícones representando Nacional (bandeira Brasil) e Internacional (globo)
-
-**Cores Sugeridas:**
-- Azul para herança e estrutura base
-- Verde para composição e flexibilidade
-- Amarelo/laranja para destaques e pontos importantes
-
-**Duração Estimada:** 5-6 slides principais + slides de apoio = apresentação de 15-20 minutos
+**Slide 9:** "A lição é: herança para essência, composição para comportamento - cada uma no lugar certo"
 
